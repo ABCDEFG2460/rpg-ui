@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLIO TACTICAL TERMINAL</title>
+    <title>CLIO 战术终端 [全中文重构版]</title>
     <style>
         :root {
             --primary: #00ff9d;
@@ -17,13 +17,8 @@
             --green: #a6e22e;
         }
 
-        @font-face {
-            font-family: 'JetBrains Mono';
-            src: local('Consolas'); /* 回退到系统自带等宽字体 */
-        }
-
         body {
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; /* 换成对中文友好的字体 */
             background-color: transparent;
             color: var(--text-main);
             margin: 0;
@@ -36,129 +31,198 @@
             width: 100%;
             max-width: 850px;
             margin: 0 auto;
-            background: var(--bg-dark);
+            background: rgba(5, 5, 5, 0.95);
             border: 1px solid var(--border);
+            border-top: 3px solid var(--primary); /* 顶部加粗亮边 */
             border-radius: 4px;
-            box-shadow: 0 0 20px rgba(0, 255, 157, 0.05), inset 0 0 10px rgba(0,0,0,0.8);
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.05);
             position: relative;
         }
 
+        /* 赛博网格背景 */
         .terminal-container::before {
             content: " ";
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
             pointer-events: none;
-            opacity: 0.3;
         }
 
         .header {
-            background: #1a1a1a;
-            padding: 6px 15px;
-            border-bottom: 2px solid var(--primary);
+            background: linear-gradient(90deg, #1a1a1a 0%, #000 100%);
+            padding: 8px 15px;
+            border-bottom: 1px dashed var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85em;
-            letter-spacing: 1px;
         }
 
-        .sys-title { font-weight: 800; color: var(--primary); text-shadow: 0 0 5px rgba(0,255,157,0.5); }
-        .sys-status { color: #888; font-size: 0.9em; }
+        .sys-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--primary);
+            text-shadow: 0 0 8px rgba(0,255,157,0.4);
+            letter-spacing: 2px;
+        }
+
+        .sys-status { color: #555; font-size: 0.8em; font-family: monospace; }
 
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
             border-bottom: 1px solid var(--border);
-            background: var(--bg-panel);
         }
 
-        .panel-box { padding: 12px 15px; position: relative; z-index: 3;}
+        .panel-box { padding: 15px; background: rgba(17, 17, 17, 0.7); }
         .panel-left { border-right: 1px dashed #222; }
 
         .group-title {
-            font-size: 0.75em;
+            font-size: 0.9em;
             font-weight: bold;
-            margin-bottom: 10px;
-            display: inline-block;
-            padding: 2px 6px;
-            background: #222;
-            border-radius: 2px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            letter-spacing: 1px;
         }
-        .text-cyan { color: var(--cyan); border-left: 2px solid var(--cyan); }
-        .text-green { color: var(--green); border-left: 2px solid var(--green); }
 
-        .stat-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 0.8em; }
-        .stat-label { color: #777; text-align: right; }
-        .stat-value { color: #eee; font-weight: bold; display: flex; justify-content: space-between;}
-        .stat-note { color: #555; font-size: 0.9em; font-weight: normal; margin-left:8px;}
+        .group-title::before {
+            content: '■';
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+
+        .text-cyan { color: var(--cyan); }
+        .text-cyan::before { color: var(--cyan); }
+
+        .text-green { color: var(--green); }
+        .text-green::before { color: var(--green); }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 90px 1fr; /* 调整中文标签宽度 */
+            gap: 10px 15px;
+            font-size: 0.85em;
+        }
+
+        .stat-label {
+            color: #888;
+            text-align: right;
+            font-family: 'Consolas', monospace; /* 标签用等宽字体显得整齐 */
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 2px;
+            border-left: 2px solid #333;
+        }
+
+        .stat-note {
+            color: #666;
+            font-size: 0.85em;
+            font-weight: normal;
+            margin-left:8px;
+        }
 
         /* OOB Area */
-        .oob-box { padding: 15px; background: #0a0a0c; z-index: 3; position: relative;}
-        .oob-title { color: var(--warning); font-size: 0.8em; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px;}
-        .oob-data { font-size: 0.75em; color: #999; line-height: 1.6; white-space: pre-wrap; font-family: inherit;}
-
-        .alert-red { color: var(--danger); text-shadow: 0 0 5px rgba(237,28,36,0.6); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
-        .scan-line {
-            width: 100%; height: 2px; background: rgba(0, 255, 157, 0.3);
-            position: absolute; top: 0; left: 0; z-index: 4;
-            animation: scan 4s linear infinite; pointer-events: none;
+        .oob-box {
+            padding: 15px;
+            background: linear-gradient(0deg, #050505 0%, #0a0a0c 100%);
         }
-        @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+        .oob-title {
+            color: var(--warning);
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .oob-title::before {
+            content: '▶';
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+
+        .oob-data {
+            font-size: 0.8em;
+            color: #aaa;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            padding: 10px;
+            background: rgba(0,0,0,0.8);
+            border: 1px dashed #222;
+            border-left: 3px solid var(--warning);
+            border-radius: 2px;
+        }
+
+        .alert-red {
+            color: var(--danger) !important;
+            border-left-color: var(--danger) !important;
+            animation: warningPulse 1.5s infinite;
+        }
+
+        @keyframes warningPulse {
+            0% { background: rgba(237,28,36,0.1); }
+            50% { background: rgba(237,28,36,0.3); }
+            100% { background: rgba(237,28,36,0.1); }
+        }
 
     </style>
 </head>
 <body>
 
 <div class="terminal-container">
-    <div class="scan-line"></div>
     <div class="header">
-        <div class="sys-title">CLIO EX-TERMINAL // TACTICAL LINK</div>
-        <div class="sys-status">NOISE REDUCTION: ACTIVE</div>
+        <div class="sys-title">万世·历史模拟终端 v5.3</div>
+        <div class="sys-status">SYS.SYNC_OK</div>
     </div>
 
     <div class="dashboard">
         <div class="panel-box panel-left">
-            <span class="group-title text-cyan">[CORE METRICS]</span>
+            <div class="group-title text-cyan">核心态势指标</div>
             <div class="stat-grid">
-                <div class="stat-label">Legitimacy:</div> <div class="stat-value"><span id="v-leg">--%</span> <span class="stat-note" id="n-leg"></span></div>
-                <div class="stat-label">Organization:</div> <div class="stat-value"><span id="v-org">--%</span> <span class="stat-note" id="n-org"></span></div>
-                <div class="stat-label">Recon:</div> <div class="stat-value"><span id="v-recon">--</span> <span class="stat-note" id="n-recon"></span></div>
-                <div class="stat-label">Stress(SAN):</div> <div class="stat-value"><span id="v-san">--</span> <span class="stat-note" id="n-san"></span></div>
+                <div class="stat-label">正统性_</div> <div class="stat-value"><span id="v-leg">--%</span> <span class="stat-note" id="n-leg"></span></div>
+                <div class="stat-label">组织度_</div> <div class="stat-value"><span id="v-org">--%</span> <span class="stat-note" id="n-org"></span></div>
+                <div class="stat-label">侦查视野_</div> <div class="stat-value"><span id="v-recon">--</span> <span class="stat-note" id="n-recon"></span></div>
+                <div class="stat-label">精神压力_</div> <div class="stat-value" id="box-san"><span id="v-san" style="color:inherit">--</span> <span class="stat-note" id="n-san" style="color:inherit"></span></div>
             </div>
         </div>
 
         <div class="panel-box">
-            <span class="group-title text-green">[LOGISTICS]</span>
+            <div class="group-title text-green">后勤物资网络</div>
             <div class="stat-grid">
-                <div class="stat-label">Treasury:</div> <div class="stat-value"><span id="v-money">--</span> <span class="stat-note" id="n-money"></span></div>
-                <div class="stat-label">Supplies:</div> <div class="stat-value"><span id="v-food">--</span> <span class="stat-note" id="n-food"></span></div>
-                <div class="stat-label">Munitions:</div> <div class="stat-value"><span id="v-ammo">--</span> <span class="stat-note" id="n-ammo"></span></div>
-                <div class="stat-label">Medical:</div> <div class="stat-value"><span id="v-med">--</span> <span class="stat-note" id="n-med"></span></div>
+                <div class="stat-label">库房资金_</div> <div class="stat-value"><span id="v-money">--</span> <span class="stat-note" id="n-money"></span></div>
+                <div class="stat-label">粮草贮备_</div> <div class="stat-value"><span id="v-food">--</span> <span class="stat-note" id="n-food"></span></div>
+                <div class="stat-label">军械弹药_</div> <div class="stat-value" id="box-ammo"><span id="v-ammo" style="color:inherit">--</span> <span class="stat-note" id="n-ammo" style="color:inherit"></span></div>
+                <div class="stat-label">医疗资源_</div> <div class="stat-value"><span id="v-med">--</span> <span class="stat-note" id="n-med"></span></div>
             </div>
         </div>
     </div>
 
     <div class="oob-box">
-        <div class="oob-title">> SITUATION & ORDER OF BATTLE (OOB)</div>
-        <div class="oob-data" id="v-oob">WAITING FOR DATALINK...</div>
+        <div class="oob-title">战场指挥链与态势简报</div>
+        <div class="oob-data" id="v-oob">系统未接收到战术数据流。</div>
     </div>
 </div>
 
 <script>
     function parseParams() {
         const u = new URLSearchParams(window.location.search);
-
-        // 提取并清洗数据，去掉可能意外传进来的 %
         const clean = (val) => val ? val.replace(/%/g, '') : '--';
         const raw = (val) => val || '';
 
-        // UI 绑定函数
         const bind = (idVal, idNote, valKey, noteKey, suffix = '') => {
             let v = clean(u.get(valKey));
             let elV = document.getElementById(idVal);
@@ -166,34 +230,37 @@
 
             let n = raw(u.get(noteKey));
             if(n) { document.getElementById(idNote).innerText = `[${n}]`; }
-            return { val: v, el: elV };
+            return { val: v, note: n };
         };
 
-        // 绑定各项数据
         bind('v-leg', 'n-leg', 'leg', 'nl', '%');
         bind('v-org', 'n-org', 'org', 'no', '%');
         bind('v-recon', 'n-recon', 'recon', 'nr');
 
-        // SAN值特殊处理警告色
+        // SAN值红色警告判定 (直接改变外部的div框)
         let sanData = bind('v-san', 'n-san', 'san', 'ns');
-        let noteSan = raw(u.get('ns'));
-        if(parseInt(sanData.val) > 70 || noteSan.includes('焦虑') || noteSan.includes('危')) {
-            sanData.el.classList.add('alert-red');
-            sanData.el.innerText += ' ⚠';
+        if(parseInt(sanData.val) > 70 || sanData.note.includes('焦虑') || sanData.note.includes('危')) {
+            document.getElementById('box-san').classList.add('alert-red');
+            document.getElementById('v-san').innerText += ' ⚠';
         }
 
         bind('v-money', 'n-money', 'money', 'nm');
         bind('v-food', 'n-food', 'food', 'nf');
+
+        // 弹药短缺红色警告
         let ammoData = bind('v-ammo', 'n-ammo', 'ammo', 'na');
-        if(raw(u.get('na')).includes('缺')) { ammoData.el.classList.add('alert-red'); }
+        if(ammoData.note.includes('缺') || ammoData.note.includes('尽')) {
+            document.getElementById('box-ammo').classList.add('alert-red');
+            document.getElementById('v-ammo').innerText += ' ⚠';
+        }
+
         bind('v-med', 'n-med', 'med', 'nd');
 
         // OOB 处理
         let oobText = u.get('oob');
         if(oobText) {
-            // 将酒馆正则传过来的 |n| 替换为真正的换行，并做一点简单的格式化美化
-            oobText = oobText.replace(/\|n\|/g, '\n> ');
-            document.getElementById('v-oob').innerText = '> ' + oobText;
+            oobText = oobText.replace(/\|n\|/g, '\n');
+            document.getElementById('v-oob').innerText = oobText;
         }
     }
 
