@@ -1,0 +1,193 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLIO ENGINE - 外部数据终端</title>
+    <style>
+        :root {
+            --primary: #00ff9d;
+            --danger: #ed1c24;
+            --warning: #eebb00;
+            --bg-dark: #000000;
+            --bg-panel: #0b0c10;
+            --border: #333333;
+            --text-main: #c0c0c0;
+            --text-muted: #666666;
+            --cyan: #66d9ef;
+            --green-bright: #a6e22e;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            background-color: transparent; /* 为了在酒馆里嵌入不突兀 */
+            color: var(--text-main);
+            margin: 0;
+            padding: 5px;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        /* 顶栏 */
+        .header {
+            background: #1a1a1a;
+            padding: 8px 15px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+        }
+        .header-title { font-weight: 900; color: var(--primary); letter-spacing: 1px; }
+        .header-sys { color: var(--text-muted); font-size: 0.8em; }
+
+        /* 内容区网格 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-panel);
+        }
+
+        .panel { padding: 12px; }
+        .panel-left { border-right: 1px solid var(--border); }
+        .panel-title { font-size: 0.85em; font-weight: bold; margin-bottom: 8px; display: block; }
+        .title-metrics { color: var(--cyan); }
+        .title-logistics { color: var(--green-bright); }
+
+        .data-list { list-style: none; padding: 0; margin: 0; font-size: 0.8em; line-height: 1.6; }
+        .data-item { display: flex; align-items: center; }
+        .data-label { width: 100px; color: #888; }
+        .data-val { font-weight: bold; color: #ddd; }
+        .data-note { margin-left: auto; font-size: 0.9em; color: var(--text-muted); text-align: right;}
+
+        /* OOB战区 */
+        .oob-section { padding: 12px; background: #111; }
+        .oob-title { color: var(--warning); font-size: 0.85em; font-weight: bold; margin-bottom: 8px; display:block;}
+        .oob-content { font-size: 0.75em; color: #aaa; line-height: 1.5; white-space: pre-wrap;}
+
+        /* 警告状态闪烁 */
+        .critical { color: var(--danger) !important; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-title">CLIO EX-TERMINAL v1.0</div>
+        <div class="header-sys" id="sysTime">SYS.SYNC</div>
+    </div>
+
+    <div class="content-grid">
+        <div class="panel panel-left">
+            <span class="panel-title title-metrics">[基础指标 METRICS]</span>
+            <ul class="data-list">
+                <li class="data-item"><span class="data-label">🛡️ 正统性:</span> <span class="data-val" id="val-leg">--</span> <span class="data-note" id="note-leg"></span></li>
+                <li class="data-item"><span class="data-label">⚙️ 组织度:</span> <span class="data-val" id="val-org">--</span> <span class="data-note" id="note-org"></span></li>
+                <li class="data-item"><span class="data-label">👁️ 视野水平:</span> <span class="data-val" id="val-recon">--</span> <span class="data-note" id="note-recon"></span></li>
+                <li class="data-item"><span class="data-label">🧠 SAN值:</span> <span class="data-val" id="val-san">--</span> <span class="data-note" id="note-san"></span></li>
+            </ul>
+        </div>
+        <div class="panel">
+            <span class="panel-title title-logistics">[后勤资产 LOGISTICS]</span>
+            <ul class="data-list">
+                <li class="data-item"><span class="data-label">💰 资金:</span> <span class="data-val" id="val-money">--</span> <span class="data-note" id="note-money"></span></li>
+                <li class="data-item"><span class="data-label">🍞 粮草:</span> <span class="data-val" id="val-food">--</span> <span class="data-note" id="note-food"></span></li>
+                <li class="data-item"><span class="data-label">⚔️ 军械:</span> <span class="data-val" id="val-ammo">--</span> <span class="data-note" id="note-ammo"></span></li>
+                <li class="data-item"><span class="data-label">💊 医疗:</span> <span class="data-val" id="val-med">--</span> <span class="data-note" id="note-med"></span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="oob-section">
+        <span class="oob-title">📊 态势简报 (SITREP)</span>
+        <div class="oob-content" id="oob-text">等待数据链推流...</div>
+    </div>
+</div>
+
+<script>
+    // 解析 URL 参数
+    function getParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            leg: params.get('leg') || '???',
+            org: params.get('org') || '???',
+            recon: params.get('recon') || '???',
+            san: params.get('san') || '???',
+            money: params.get('money') || '???',
+            food: params.get('food') || '???',
+            ammo: params.get('ammo') || '???',
+            med: params.get('med') || '???',
+            nLeg: decodeURIComponent(params.get('nl') || ''),
+            nOrg: decodeURIComponent(params.get('no') || ''),
+            nRecon: decodeURIComponent(params.get('nr') || ''),
+            nSan: decodeURIComponent(params.get('ns') || ''),
+            nMoney: decodeURIComponent(params.get('nm') || ''),
+            nFood: decodeURIComponent(params.get('nf') || ''),
+            nAmmo: decodeURIComponent(params.get('na') || ''),
+            nMed: decodeURIComponent(params.get('nd') || ''),
+            oob: decodeURIComponent(params.get('oob') || '当前无战术数据输入。')
+        };
+    }
+
+    // 填充数据
+    function renderData() {
+        const d = getParams();
+
+        // 渲染主数值
+        document.getElementById('val-leg').textContent = d.leg;
+        document.getElementById('val-org').textContent = d.org;
+        document.getElementById('val-recon').textContent = d.recon;
+
+        const sanEl = document.getElementById('val-san');
+        sanEl.textContent = d.san;
+        // 简单的危险判定测试，比如SAN包含高或者超过某个阈值标红，这里粗略判断
+        if(d.san.includes('低') || parseInt(d.san) < 30) { sanEl.classList.add('critical'); }
+
+        document.getElementById('val-money').textContent = d.money;
+        document.getElementById('val-food').textContent = d.food;
+        document.getElementById('val-ammo').textContent = d.ammo;
+        document.getElementById('val-med').textContent = d.med;
+
+        // 渲染备注 (Notes)
+        document.getElementById('note-leg').textContent = d.nLeg ? `[${d.nLeg}]` : '';
+        document.getElementById('note-org').textContent = d.nOrg ? `[${d.nOrg}]` : '';
+        document.getElementById('note-recon').textContent = d.nRecon ? `[${d.nRecon}]` : '';
+        document.getElementById('note-san').textContent = d.nSan ? `[${d.nSan}]` : '';
+        document.getElementById('note-money').textContent = d.nMoney ? `[${d.nMoney}]` : '';
+        document.getElementById('note-food').textContent = d.nFood ? `[${d.nFood}]` : '';
+        document.getElementById('note-ammo').textContent = d.nAmmo ? `[${d.nAmmo}]` : '';
+        document.getElementById('note-med').textContent = d.nMed ? `[${d.nMed}]` : '';
+
+        // 渲染OOB
+        // 把URL里传递的特殊换行符 |n| 替换为真实的HTML换行
+        const formattedOob = d.oob.replace(/\|n\|/g, '<br>');
+        document.getElementById('oob-text').innerHTML = formattedOob;
+
+        // 更新时间
+        document.getElementById('sysTime').textContent = new Date().toLocaleTimeString();
+    }
+
+    // 页面加载完成后执行
+    window.onload = renderData;
+</script>
+
+</body>
+</html>
+```
