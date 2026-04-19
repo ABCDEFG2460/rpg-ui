@@ -1,0 +1,12 @@
+{
+  "display_name": "SS-Helper [骰子助手]",
+  "loading_order": -8,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "author": "Shion",
+  "version": "1.2.0",
+  "auto_update": false,
+  "homePage": "https://github.com/ShionCox/SS-Helper-RollHelper",
+  "email": "348591466@qq.com"
+}
